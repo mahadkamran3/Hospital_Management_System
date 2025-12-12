@@ -29,7 +29,7 @@ app.use('/api/doctors', require('./routes/doctors'));
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: '🏥 Welcome to HospitaliaCare API',
+    message: 'Welcome to project for Ms Areeba',
     version: '1.0.0',
     endpoints: {
       auth: '/api/auth',
@@ -66,14 +66,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════════════════════════╗
-║           🏥 HospitaliaCare Backend Server                 ║
-╠════════════════════════════════════════════════════════════╣
-║  Server running on: http://localhost:${PORT}                  ║
-║  Environment: ${process.env.NODE_ENV || 'development'}                             ║
-╚════════════════════════════════════════════════════════════╝
-  `);
+  console.log(`Server running on: http://localhost:${PORT}`);
 });
 
 module.exports = app;

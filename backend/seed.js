@@ -10,9 +10,9 @@ const Doctor = require('./models/Doctor');
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hospital_appointments');
-    console.log('✅ MongoDB Connected for seeding...');
+    console.log('MongoDB Connected...');
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
+    console.error('MongoDB connection error:', error);
     process.exit(1);
   }
 };
@@ -105,12 +105,12 @@ const seedDatabase = async () => {
   try {
     await connectDB();
     
-    console.log('🗑️  Clearing existing data...');
+    console.log('Clearing existing data...');
     await User.deleteMany({});
     await Appointment.deleteMany({});
     await Doctor.deleteMany({});
     
-    console.log('👤 Creating admin user...');
+    console.log('Creating admin user...');
     const adminUser = await User.create({
       name: 'Admin User',
       email: 'admin@hospital.pk',
@@ -118,14 +118,14 @@ const seedDatabase = async () => {
       phone: '0300-1234567',
       role: 'admin'
     });
-    console.log('   ✅ Admin: admin@hospital.pk / admin1');
+    console.log('Admin: admin@hospital.pk / admin1');
     
-    console.log('👨‍⚕️ Creating doctors...');
+    console.log('Creating doctors...');
     const doctorsData = generateDoctors();
     const doctors = await Doctor.insertMany(doctorsData.map(d => ({ ...d, createdBy: adminUser._id })));
-    console.log(`   ✅ Created ${doctors.length} doctors`);
+    console.log(`Created ${doctors.length} doctors`);
     
-    console.log('👥 Creating 50 patient users...');
+    console.log('Creating 50 patient users...');
     const usersData = generateUsers();
     const users = [];
     
@@ -133,9 +133,9 @@ const seedDatabase = async () => {
       const user = await User.create(userData);
       users.push(user);
     }
-    console.log(`   ✅ Created ${users.length} patient users`);
+    console.log(`Created ${users.length} patient users`);
     
-    console.log('📅 Creating appointments...');
+    console.log('Creating appointments...');
     const appointments = [];
     const statuses = ['scheduled', 'completed', 'cancelled'];
     
@@ -162,24 +162,24 @@ const seedDatabase = async () => {
     }
     
     await Appointment.insertMany(appointments);
-    console.log(`   ✅ Created ${appointments.length} appointments`);
+    console.log(`Created ${appointments.length} appointments`);
     
     console.log('\n' + '='.repeat(60));
-    console.log('🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY!');
+    console.log('DATABASE SEEDING COMPLETED SUCCESSFULLY!');
     console.log('='.repeat(60));
-    console.log('\n📊 Summary:');
-    console.log(`   • Admin User: 1`);
-    console.log(`   • Patient Users: ${users.length}`);
-    console.log(`   • Doctors: ${doctors.length}`);
-    console.log(`   • Appointments: ${appointments.length}`);
-    console.log('\n🔐 Login Credentials:');
-    console.log('   Admin: admin@hospital.pk / admin1');
-    console.log('   Sample User: (check users list) / user123');
+    console.log('\nSummary:');
+    console.log(`Admin User: 1`);
+    console.log(`Patient Users: ${users.length}`);
+    console.log(`Doctors: ${doctors.length}`);
+    console.log(`Appointments: ${appointments.length}`);
+    console.log('\nLogin Credentials:');
+    console.log('Admin: admin@hospital.pk / admin1');
+    console.log('Sample User: (check users list) / user123');
     console.log('\n' + '='.repeat(60));
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Seeding error:', error);
+    console.error('Seeding error:', error);
     process.exit(1);
   }
 };
