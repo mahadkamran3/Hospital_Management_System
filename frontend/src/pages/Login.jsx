@@ -23,10 +23,6 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
-/**
- * Login Page Component
- * Modern card-based design with gradient background
- */
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -89,7 +85,7 @@ const Login = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00695f 0%, #003d33 50%, #00251a 100%)',
+        background: 'linear-gradient(135deg, #0b1020 0%, #1e293b 50%, #0f172a 100%)',
         padding: 2,
         position: 'relative',
         overflow: 'hidden',
@@ -100,17 +96,7 @@ const Login = () => {
           right: '-50%',
           width: '100%',
           height: '100%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%)',
-          borderRadius: '50%',
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          bottom: '-50%',
-          left: '-50%',
-          width: '100%',
-          height: '100%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 50%)',
+          background: 'radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 50%)',
           borderRadius: '50%',
         },
       }}
@@ -128,54 +114,33 @@ const Login = () => {
           {/* Header Section */}
           <Box
             sx={{
-              background: 'linear-gradient(135deg, #00695f 0%, #004d40 100%)',
-              padding: 4,
+              background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+              padding: 3,
               textAlign: 'center',
               color: 'white',
             }}
           >
             <Box
               sx={{
-                width: 80,
-                height: 80,
+                width: 60,
+                height: 60,
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 16px',
+                margin: '0 auto 12px',
               }}
             >
-              <HospitalIcon sx={{ fontSize: 48 }} />
+              <HospitalIcon sx={{ fontSize: 36 }} />
             </Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-              HospitaliaCare
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9 }}>
-              Hospital Appointment Management System
+            <Typography variant="h5" fontWeight={700}>
+              Sign In
             </Typography>
           </Box>
 
           {/* Form Section */}
           <CardContent sx={{ padding: 4 }}>
-            <Typography
-              variant="h5"
-              fontWeight={600}
-              textAlign="center"
-              gutterBottom
-              color="primary"
-            >
-              Welcome Back
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              textAlign="center"
-              mb={3}
-            >
-              Sign in to access your appointments
-            </Typography>
-
             {error && (
               <Alert 
                 severity="error" 
@@ -204,7 +169,6 @@ const Login = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -247,9 +211,9 @@ const Login = () => {
                   py: 1.5,
                   fontSize: '1.1rem',
                   fontWeight: 600,
-                  background: 'linear-gradient(135deg, #00695f 0%, #004d40 100%)',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #004d40 0%, #003d33 100%)',
+                    background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)',
                   },
                 }}
               >
@@ -277,15 +241,6 @@ const Login = () => {
             </Box>
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <Typography
-          variant="body2"
-          textAlign="center"
-          sx={{ mt: 3, color: 'rgba(255,255,255,0.7)' }}
-        >
-          © 2025 HospitaliaCare Pakistan. All rights reserved.
-        </Typography>
       </Container>
     </Box>
   );

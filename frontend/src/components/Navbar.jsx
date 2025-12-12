@@ -185,10 +185,11 @@ const Navbar = () => {
       <AppBar 
         position="sticky" 
         elevation={0}
-        sx={{ 
-          background: 'linear-gradient(135deg, #00695f 0%, #004d40 100%)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-        }}
+        sx={(theme) => ({
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+        })}
       >
         <Toolbar>
           {/* Mobile menu button */}
@@ -214,15 +215,18 @@ const Navbar = () => {
             onClick={() => navigate('/appointments')}
           >
             <Box
-              sx={{
+              sx={(theme) => ({
                 width: 40,
                 height: 40,
-                backgroundColor: 'rgba(255,255,255,0.2)',
+                backgroundColor: 'action.selected',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-              }}
+                color: theme.palette.primary.contrastText,
+              })}
             >
               <HospitalIcon />
             </Box>
@@ -243,9 +247,9 @@ const Navbar = () => {
                 startIcon={<CalendarIcon />}
                 onClick={() => navigate('/appointments')}
                 sx={{
-                  backgroundColor: isActive('/appointments') ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  backgroundColor: isActive('/appointments') ? 'action.selected' : 'transparent',
                   '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.15)',
+                    backgroundColor: 'action.hover',
                   },
                 }}
               >
@@ -258,9 +262,9 @@ const Navbar = () => {
                   startIcon={<AdminIcon />}
                   onClick={() => navigate('/admin')}
                   sx={{
-                    backgroundColor: isActive('/admin') ? 'rgba(255,255,255,0.2)' : 'transparent',
+                    backgroundColor: isActive('/admin') ? 'action.selected' : 'transparent',
                     '&:hover': {
-                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      backgroundColor: 'action.hover',
                     },
                   }}
                 >
@@ -277,8 +281,8 @@ const Navbar = () => {
                 size="small"
                 label={isAdmin ? 'Admin' : 'User'}
                 sx={{
-                  backgroundColor: isAdmin ? 'secondary.main' : 'rgba(255,255,255,0.2)',
-                  color: 'white',
+                  backgroundColor: isAdmin ? 'secondary.main' : 'action.selected',
+                  color: isAdmin ? 'secondary.contrastText' : 'text.primary',
                   fontWeight: 500,
                 }}
               />
@@ -286,8 +290,10 @@ const Navbar = () => {
             <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
               <Avatar
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  border: '2px solid rgba(255,255,255,0.4)',
+                  bgcolor: 'primary.main',
+                  border: '2px solid',
+                  borderColor: 'primary.light',
+                  color: 'primary.contrastText',
                 }}
               >
                 {user?.name?.charAt(0).toUpperCase()}
