@@ -1,8 +1,9 @@
 ﻿import { Builder, By, Key, until } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 
-const frontendUrl = 'http://localhost:5173';
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 const loginUrl = `${frontendUrl}/login`;
+const backendApi = process.env.BACKEND_URL || 'http://localhost:5000';
 const sampleEmail = 'mahadkamran47@gmail.com';
 const samplePassword = 'mahadkamran123';
 
@@ -112,7 +113,7 @@ const runTests = async () => {
     const token = await driver.executeScript("return localStorage.getItem('token');");
     if (!token) throw new Error('No auth token found in browser localStorage');
 
-    const apiUrl = 'http://localhost:5000/api/appointments';
+    const apiUrl = `${backendApi}/api/appointments`;
     const payload = { patientName, doctorName: 'Dr. Sana Malik', date: today, department: 'General Medicine', phone: '0300-1234567' };
 
     // Use fetch (Node 18+) to call backend API

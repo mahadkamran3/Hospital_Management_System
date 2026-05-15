@@ -45,24 +45,13 @@ ENV CHROME_PATH=/usr/bin/chromium
 ENV CHROME_BIN=/usr/bin/chromium
 
 WORKDIR /e2e
-COPY tests/package*.json ./
-RUN npm ci --ignore-scripts && npm cache clean --force
+COPY tests/package.json ./
+RUN npm install --no-audit --no-fund && npm cache clean --force
 
 COPY tests/ ./tests/
-COPY frontend/ /app/frontend/
-
-# Build frontend for E2E use
-RUN cd /app/frontend && npm ci && npm run build && \
-    mkdir -p /e2e/frontend-dist && cp -r /app/frontend/dist/* /e2e/frontend-dist/
-
-RUN apt-get update && apt-get install -y --no-install-recommends chromium-driver && \
-    rm -rf /var/lib/apt/lists/* && npm cache clean --force
 
 # Point selenium-webdriver to the system chromium
 RUN sed -i 's|/usr/bin/chromedriver|/usr/lib/chromium/chromedriver|g' \
       /usr/lib/node_modules/selenium-webdriver/lib/chromium.js 2>/dev/null || true
 
-ENV PORT=5173
-EXPOSE 5173
-
-ENTRYPOINT ["node", "/e2e/tests/test.js"]
+ENTRYPOINT ["node", "/e2e/tests/app.test.js"]
