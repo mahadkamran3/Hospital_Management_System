@@ -90,7 +90,7 @@ pipeline {
 
                     docker build -t %FRONTEND_IMAGE% -f frontend/Dockerfile frontend
 
-                    docker build -t %SELENIUM_TEST_IMAGE% -f tests/Dockerfile .
+                    docker build -t %SELENIUM_TEST_IMAGE% -f tests/Dockerfile ./tests
                 '''
             }
         }

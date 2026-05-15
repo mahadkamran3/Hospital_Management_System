@@ -45,13 +45,13 @@ ENV CHROME_PATH=/usr/bin/chromium
 ENV CHROME_BIN=/usr/bin/chromium
 
 WORKDIR /e2e
-COPY tests/package.json ./
+COPY package.json ./
 RUN npm install --no-audit --no-fund && npm cache clean --force
 
-COPY tests/ ./tests/
+COPY app.test.js test.js ./
 
 # Point selenium-webdriver to the system chromium
 RUN sed -i 's|/usr/bin/chromedriver|/usr/lib/chromium/chromedriver|g' \
       /usr/lib/node_modules/selenium-webdriver/lib/chromium.js 2>/dev/null || true
 
-ENTRYPOINT ["node", "/e2e/tests/app.test.js"]
+ENTRYPOINT ["node", "/e2e/app.test.js"]
