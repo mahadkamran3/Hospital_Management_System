@@ -1,22 +1,20 @@
 pipeline {
     agent any
 
-    tools { nodejs 'NodeJS_20' }
-
     environment {
-        PROJECT                 = 'HospitaliaCare'
-        GITHUB_REPO_URL         = 'https://github.com/chumarhassan/HospitaliaCare-Hospital-Appointment-Management-System.git'
-        AWS_REGION              = 'us-east-1'
-        EC2_USER                = 'ubuntu'
-        BACKEND_IMAGE           = "${ECR_REGISTRY:-hospitalia}/hospitalia-backend:${env.BUILD_NUMBER}"
-        FRONTEND_IMAGE          = "${ECR_REGISTRY:-hospitalia}/hospitalia-frontend:${env.BUILD_NUMBER}"
-        SELENIUM_TEST_IMAGE     = "${ECR_REGISTRY:-hospitalia}/hospitalia-selenium-tests:${env.BUILD_NUMBER}"
-        MONGO_URI               = 'mongodb://mongodb:27017/hospital_appointments'
-        JWT_SECRET              = credentials('JWT_SECRET_KEY')
-        GITHUB_CREDENTIALS      = 'github-credentials'
-        DB_PORT                 = '27017'
-        NODE_PORT               = '5000'
-        FRONTEND_PORT           = '80'
+        PROJECT = 'HospitaliaCare'
+
+        GITHUB_REPO_URL = 'https://github.com/mahadkamran3/Hospital_Management_System.git'
+
+        BACKEND_IMAGE = "hospitalia-backend:${env.BUILD_NUMBER}"
+        FRONTEND_IMAGE = "hospitalia-frontend:${env.BUILD_NUMBER}"
+        SELENIUM_TEST_IMAGE = "hospitalia-selenium-tests:${env.BUILD_NUMBER}"
+
+        MONGO_URI = 'mongodb://mongodb:27017/hospital_appointments'
+
+        DB_PORT = '27017'
+        NODE_PORT = '5000'
+        FRONTEND_PORT = '80'
     }
 
     options {
@@ -27,172 +25,181 @@ pipeline {
 
     stages {
 
-        // ──────────────────────────────────────────────
-        // STAGE 1 – Checkout
-        // ──────────────────────────────────────────────
+        // =========================================
+        // STAGE 1 - CHECKOUT
+        // =========================================
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[url: "${GITHUB_REPO_URL}", credentialsId: "${GITHUB_CREDENTIALS}"]]
-                ])
-                sh 'git rev-parse --short HEAD'
-                updateGitlabCommitStatus name: 'build', state: 'running'
+
+                git branch: 'main',
+                url: "${GITHUB_REPO_URL}"
+
+                bat 'git rev-parse --short HEAD'
             }
         }
 
-        // ──────────────────────────────────────────────
-        // STAGE 2 – Code Build
-        //   • Install Node.js dependencies
-        //   • Build Docker images for all three services
-        // ──────────────────────────────────────────────
-        stage('Code Build') {
+        // =========================================
+        // STAGE 2 - INSTALL DEPENDENCIES
+        // =========================================
+        stage('Install Dependencies') {
             steps {
-                script {
-                    sh '''
-                        echo "=============================="
-                        echo "   Installing dependencies     "
-                        echo "=============================="
-                        cd backend  && npm ci --only=production
-                        cd ../frontend && npm ci
-                        cd ../tests   && npm ci
-                    '''
-                }
-                script {
-                    sh '''
-                        echo "=============================="
-                        echo "   Building Docker Images      "
-                        echo "=============================="
-                        docker build -t ${BACKEND_IMAGE}    -f backend/Dockerfile    ./backend
-                        docker build -t ${FRONTEND_IMAGE}   -f frontend/Dockerfile  ./frontend
-                        docker build -t ${SELENIUM_TEST_IMAGE} -f tests/Dockerfile  .
-                    '''
-                }
+
+                bat '''
+                    echo ==============================
+                    echo Installing Backend Dependencies
+                    echo ==============================
+
+                    cd backend
+                    npm install
+
+                    cd ..
+
+                    echo ==============================
+                    echo Installing Frontend Dependencies
+                    echo ==============================
+
+                    cd frontend
+                    npm install
+
+                    cd ..
+
+                    echo ==============================
+                    echo Installing Test Dependencies
+                    echo ==============================
+
+                    cd tests
+                    npm install
+
+                    cd ..
+                '''
             }
         }
 
-        // ──────────────────────────────────────────────
-        // STAGE 3 – Unit Testing
-        //   Runs Jest + supertest inside a dedicated
-        //   unit-tests service container (mongodb-memory-
-        //   server compatible via a temporary MongoDB
-        //   container spun up in the pipeline)
-        // ──────────────────────────────────────────────
+        // =========================================
+        // STAGE 3 - BUILD DOCKER IMAGES
+        // =========================================
+        stage('Build Docker Images') {
+            steps {
+
+                bat '''
+                    echo ==============================
+                    echo Building Docker Images
+                    echo ==============================
+
+                    docker build -t %BACKEND_IMAGE% -f backend/Dockerfile backend
+
+                    docker build -t %FRONTEND_IMAGE% -f frontend/Dockerfile frontend
+
+                    docker build -t %SELENIUM_TEST_IMAGE% -f tests/Dockerfile .
+                '''
+            }
+        }
+
+        // =========================================
+        // STAGE 4 - UNIT TESTING
+        // =========================================
         stage('Unit Testing') {
             steps {
-                script {
-                    // Remove any stale resource so each run starts fresh
-                    sh 'docker compose -f docker-compose.test.yml down -v 2>/dev/null || true'
 
-                    sh '''
-                        echo "=============================="
-                        echo "   Starting unit-test MongoDB  "
-                        echo "=============================="
-                        docker compose -f docker-compose.test.yml up -d --wait
-                    '''
+                bat '''
+                    echo ==============================
+                    echo Starting Test Environment
+                    echo ==============================
 
-                    // Install dev dependencies (jest, supertest, mongodb-memory-server) and run all tests
-                    sh '''
-                        echo "=============================="
-                        echo "   Running Jest Unit Tests     "
-                        echo "=============================="
-                        cd backend
-                        npm install --include=dev --no-optional
-                        npx jest --forceExit --detectOpenHandles --runInBand --coverage
-                    '''
+                    docker compose -f docker-compose.test.yml down -v
 
-                }
+                    docker compose -f docker-compose.test.yml up -d
+                '''
+
+                bat '''
+                    echo ==============================
+                    echo Running Jest Tests
+                    echo ==============================
+
+                    cd backend
+
+                    npm install
+
+                    npx jest --forceExit --detectOpenHandles --runInBand --coverage
+
+                    cd ..
+                '''
             }
+
             post {
                 always {
-                    sh '''docker compose -f docker-compose.test.yml down -v || true'''
-                }
-                failure {
-                    updateGitlabCommitStatus name: 'test', state: 'failed'
-                }
-                success {
-                    updateGitlabCommitStatus name: 'test', state: 'passed'
+
+                    bat '''
+                        docker compose -f docker-compose.test.yml down -v
+                    '''
                 }
             }
         }
 
-        // ──────────────────────────────────────────────
-        // STAGE 4 – Containerized Selenium Testing
-        //   Runs E2E Selenium tests (login, appointment
-        //   creation, logout) against the live containers
-        //   started in stage 3
-        // ──────────────────────────────────────────────
-        stage('Containerized Selenium Testing') {
+        // =========================================
+        // STAGE 5 - SELENIUM TESTING
+        // =========================================
+        stage('Selenium Testing') {
             steps {
-                script {
-                    sh '''
-                        echo "=============================="
-                        echo "   Selenium E2E Tests          "
-                        echo "=============================="
-                        docker run --rm \
-                            --network host \
-                            -e FRONTEND_URL=http://localhost:5173 \
-                            -e BACKEND_URL=http://localhost:5000 \
-                            ${SELENIUM_TEST_IMAGE}
-                    '''
-                }
-            }
-            post {
-                failure {
-                    updateGitlabCommitStatus name: 'selenium', state: 'failed'
-                }
-                success {
-                    updateGitlabCommitStatus name: 'selenium', state: 'passed'
-                }
+
+                bat '''
+                    echo ==============================
+                    echo Running Selenium Tests
+                    echo ==============================
+
+                    docker run --rm ^
+                    -e FRONTEND_URL=http://host.docker.internal:5173 ^
+                    -e BACKEND_URL=http://host.docker.internal:5000 ^
+                    %SELENIUM_TEST_IMAGE%
+                '''
             }
         }
 
-        // ──────────────────────────────────────────────
-        // STAGE 5 – Containerized Deployment
-        //   Stops any running stack and starts fresh
-        //   containers for backend + frontend + MongoDB
-        // ──────────────────────────────────────────────
-        stage('Containerized Deployment') {
+        // =========================================
+        // STAGE 6 - DEPLOYMENT
+        // =========================================
+        stage('Deployment') {
             steps {
-                script {
-                    sh 'docker compose -f docker-compose.yml down --remove-orphans -v 2>/dev/null'
-                    sh '''
-                        echo "=============================="
-                        echo "   Deploying Production Stack  "
-                        echo "=============================="
-                        docker compose -f docker-compose.yml up -d --build --wait
-                        echo "Deployment complete."
-                        docker compose -f docker-compose.yml ps
-                        docker compose -f docker-compose.yml logs --tail=50
-                    '''
-                }
-            }
-            post {
-                failure {
-                    updateGitlabCommitStatus name: 'deploy', state: 'failed'
-                }
-                success {
-                    updateGitlabCommitStatus name: 'deploy', state: 'passed'
-                    // push notification placeholder
-                    // slackSend channel: '#deployments', message: "${PROJECT} build #${env.BUILD_NUMBER} deployed successfully"
-                }
+
+                bat '''
+                    echo ==============================
+                    echo Deploying Application
+                    echo ==============================
+
+                    docker compose down
+
+                    docker compose up -d --build
+
+                    docker compose ps
+                '''
             }
         }
     }
 
+    // =========================================
+    // POST ACTIONS
+    // =========================================
     post {
+
         always {
-            sh '''
-                echo "=== Pipeline finished at $(date) ==="
-                # Never leave dangling Selenium containers behind
-                docker ps -a --format '{{.Names}}\t{{.Image}}' | grep hospitalia-selenium-tests | awk '{print $1}' | xargs -r docker rm -f
+
+            bat '''
+                echo ==================================
+                echo Pipeline Finished
+                echo ==================================
+
+                docker container prune -f
             '''
+
             cleanWs()
         }
+
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
         failure {
-            echo "Pipeline failed. Check console output for details."
-            // mail to: dev-team@example.com, subject: "${PROJECT} Build #${env.BUILD_NUMBER} FAILED"
+            echo 'Pipeline failed. Check Jenkins console output.'
         }
     }
 }
