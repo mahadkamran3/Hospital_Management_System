@@ -7,12 +7,9 @@ npm-debug.log*
 .vscode/
 dist/
 build/
-package-lock.json
 yarn.lock
 coverage/
 *.tsbuildinfo
 *.bak
 *.tmp
 *.swp
-package.json
-vite.config.js
