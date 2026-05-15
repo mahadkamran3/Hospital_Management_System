@@ -35,4 +35,4 @@ RUN npm ci
 
 COPY . .
 
-CMD ["node", "app.test.js"]
+CMD ["node", "test.js"]
