@@ -4,6 +4,13 @@ const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
 const auth = require('../middleware/auth');
 
+// Fallback time slots used when client does not supply a time
+const TIME_SLOTS = [
+  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+  '12:00 PM', '12:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
+  '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM'
+];
+
 const isDateTodayOrFuture = (dateString) => {
   const inputDate = new Date(dateString);
   const today = new Date();
@@ -113,7 +120,7 @@ router.post('/', [
     if (!isDateTodayOrFuture(value)) throw new Error('Appointment date must be today or a future date');
     return true;
   }),
-  body('time').notEmpty().withMessage('Appointment time is required'),
+  // time is optional; server will assign a random time if missing
   body('department').notEmpty().isIn(['Cardiology', 'Pediatrics', 'Orthopedics', 'Neurology', 'General Medicine', 'Gynecology', 'Dermatology', 'ENT', 'Ophthalmology']),
   body('phone').notEmpty().matches(/^0[0-9]{3}-[0-9]{7}$/).withMessage('Please enter a valid Pakistani phone number (e.g., 0300-1234567)')
 ], async (req, res) => {
@@ -123,10 +130,16 @@ router.post('/', [
       return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
     }
 
-    const { patientName, doctorName, date, time, department, phone, notes, status } = req.body;
+    let { patientName, doctorName, date, time, department, phone, notes, status } = req.body;
     
     if (!isDateTodayOrFuture(date)) {
       return res.status(400).json({ success: false, message: 'Appointment date must be today or a future date' });
+    }
+
+    // If client did not provide a time, assign a random one from TIME_SLOTS
+    if (!time) {
+      time = TIME_SLOTS[Math.floor(Math.random() * TIME_SLOTS.length)];
+      console.log('Server: assigned random time slot', time);
     }
 
     const existingAppointment = await Appointment.findOne({ doctorName, date: new Date(date), time });

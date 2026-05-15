@@ -118,7 +118,7 @@ const seedDatabase = async () => {
       phone: '0300-1234567',
       role: 'admin'
     });
-    console.log('Admin: admin@hospital.pk / admin1');
+    console.log('Admin user created!');
     
     console.log('Creating doctors...');
     const doctorsData = generateDoctors();
