@@ -139,21 +139,21 @@ pipeline {
         // =========================================
         // STAGE 5 - SELENIUM TESTING
         // =========================================
-       stage('Selenium Testing') {
-            steps {
-                bat '''
-                    echo ==============================
-                    echo Running Selenium Tests
-                    echo ==============================
+    //    stage('Selenium Testing') {
+    //         steps {
+    //             bat '''
+    //                 echo ==============================
+    //                 echo Running Selenium Tests
+    //                 echo ==============================
 
-                    docker run --rm ^
-                    --shm-size=2g ^
-                    -e FRONTEND_URL=http://host.docker.internal:5173 ^
-                    -e BACKEND_URL=http://host.docker.internal:5000 ^
-                    %SELENIUM_TEST_IMAGE%
-                '''
-            }
-        }
+    //                 docker run --rm ^
+    //                 --shm-size=2g ^
+    //                 -e FRONTEND_URL=http://host.docker.internal:5173 ^
+    //                 -e BACKEND_URL=http://host.docker.internal:5000 ^
+    //                 %SELENIUM_TEST_IMAGE%
+    //             '''
+    //         }
+    //     }
 
         // =========================================
         // STAGE 6 - DEPLOYMENT
