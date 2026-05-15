@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+npm-debug.log*
+dist/
+build/
+coverage/
+.git/
+.gitignore
+README.md
+*.log
+.vscode/
+.idea/
+nginx.conf

@@ -934,11 +934,7 @@ const Appointments = () => {
                   value={formData.time}
                   label="Time"
                   onChange={handleFormChange}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <TimeIcon color="action" />
-                    </InputAdornment>
-                  }
+                  inputProps={{ 'aria-label': 'time-select' }}
                 >
                   {TIME_SLOTS.map((time) => (
                     <MenuItem key={time} value={time}>{time}</MenuItem>

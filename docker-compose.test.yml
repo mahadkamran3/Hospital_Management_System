@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  test-mongo:
+    image: mongo:7-jammy
+    container_name: hospitalia-test-mongo
+    tmpfs:
+      - /data/db
+    command: ["mongod", "--bind_ip_all", "--noauth"]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ping: 1})' --quiet || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  unit-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hospitalia-unit-tests
+    environment:
+      NODE_ENV: test
+      JWT_SECRET: test_jwt_secret_for_tests
+      PORT: 5000
+      MONGO_URI: mongodb://test-mongo:27017/testdb
+    command: >
+      sh -c "npm install --include=dev &&
+             npx jest --forceExit --detectOpenHandles --runInBand"
+    depends_on:
+      test-mongo:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
