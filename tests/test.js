@@ -9,7 +9,6 @@ const samplePassword = 'mahadkamran123';
 
 const buildDriver = () => {
   const options = new chrome.Options();
-  // Uncomment to run headless
   options.addArguments('--headless=new');
   options.addArguments('--disable-gpu');
   options.addArguments('--no-sandbox');
@@ -33,13 +32,7 @@ const openUserMenu = async (driver) => {
   }
 };
 
-/**
- * Select a MUI v5 non-native <Select> option by label text and zero-based index.
- * Clicks the trigger via executeScript (bypasses interactability check), then
- * clicks the option in the portal popup via executeScript.
- */
 const selectMuiOption = async (driver, labelText, optionIndex = 0) => {
-  // Try multiple strategies to locate the MUI select trigger
   let trigger;
   const xpaths = [
     `//div[label[normalize-space()='${labelText}']]//div[contains(@class,'MuiSelect-root')]`,
@@ -52,7 +45,6 @@ const selectMuiOption = async (driver, labelText, optionIndex = 0) => {
       console.log('DEBUG: selectMuiOption found trigger using xpath:', xp);
       break;
     } catch (e) {
-      // continue to next xpath
     }
   }
   if (!trigger) {
