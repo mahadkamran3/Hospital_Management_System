@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
+const Doctor = require('../models/Doctor');
 const auth = require('../middleware/auth');
 
 // Fallback time slots used when client does not supply a time
@@ -147,11 +148,26 @@ router.post('/', [
       return res.status(400).json({ success: false, message: `Dr. ${doctorName} already has an appointment at ${time} on this date` });
     }
 
+    // Check if doctor exists and has available slots
+    const doctor = await Doctor.findOne({ name: doctorName });
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: `Doctor '${doctorName}' not found in the system` });
+    }
+    
+    if (doctor.availableSlots <= 0) {
+      return res.status(400).json({ success: false, message: `Dr. ${doctorName} has no available appointment slots` });
+    }
+
     const appointment = new Appointment({
       patientName, doctorName, date: new Date(date), time, department, phone, notes: notes || '', status: status || 'scheduled', createdBy: req.user._id
     });
 
     await appointment.save();
+    
+    // Decrement available slots for the doctor
+    doctor.availableSlots -= 1;
+    await doctor.save();
+    
     await appointment.populate('createdBy', 'name email');
 
     res.status(201).json({ success: true, message: 'Appointment created successfully', appointment });
@@ -232,6 +248,13 @@ router.delete('/:id', auth, async (req, res) => {
     
     if (req.user.role !== 'admin' && appointment.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Access denied. You can only delete your own appointments.' });
+    }
+    
+    // Restore available slots for the doctor
+    const doctor = await Doctor.findOne({ name: appointment.doctorName });
+    if (doctor) {
+      doctor.availableSlots += 1;
+      await doctor.save();
     }
     
     await Appointment.findByIdAndDelete(req.params.id);

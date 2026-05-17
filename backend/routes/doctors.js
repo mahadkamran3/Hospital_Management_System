@@ -49,6 +49,80 @@ router.get('/stats', auth, admin, async (req, res) => {
   }
 });
 
+// Doctor Report endpoint - shows all doctors with available slots
+router.get('/report/all', auth, admin, async (req, res) => {
+  try {
+    const doctors = await Doctor.find()
+      .select('_id name specialization availableSlots phone experience consultationFee qualification')
+      .sort({ name: 1 });
+    
+    if (!doctors || doctors.length === 0) {
+      return res.json({ success: true, message: 'No doctors found in the system', doctors: [] });
+    }
+    
+    res.json({
+      success: true,
+      count: doctors.length,
+      message: 'Doctor Report - Showing all active doctors with available appointment slots',
+      doctors: doctors.map(doc => ({
+        doctorId: doc._id,
+        name: doc.name,
+        specialization: doc.specialization,
+        availableSlots: doc.availableSlots,
+        phone: doc.phone,
+        experience: doc.experience,
+        qualification: doc.qualification,
+        consultationFee: doc.consultationFee
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching doctor report:', error);
+    res.status(500).json({ success: false, message: 'Server error while fetching doctor report' });
+  }
+});
+
+// Search doctor by ID endpoint
+router.get('/search/by-id/:doctorId', auth, async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    
+    // Check if valid MongoDB ObjectId
+    if (!doctorId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ success: false, message: 'Invalid doctor ID format' });
+    }
+    
+    const doctor = await Doctor.findById(doctorId)
+      .select('_id name specialization availableSlots phone experience consultationFee qualification email');
+    
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found in the system' });
+    }
+    
+    if (!doctor.isActive) {
+      return res.status(404).json({ success: false, message: 'Doctor is inactive' });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Doctor found successfully',
+      doctor: {
+        doctorId: doctor._id,
+        name: doctor.name,
+        specialization: doctor.specialization,
+        availableSlots: doctor.availableSlots,
+        phone: doctor.phone,
+        email: doctor.email,
+        experience: doctor.experience,
+        qualification: doctor.qualification,
+        consultationFee: doctor.consultationFee
+      }
+    });
+  } catch (error) {
+    console.error('Error searching for doctor by ID:', error);
+    res.status(500).json({ success: false, message: 'Server error while searching for doctor' });
+  }
+});
+
 router.get('/:id', auth, async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id).select('-__v');
@@ -63,7 +137,7 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, admin, async (req, res) => {
   try {
-    const { name, email, phone, specialization, qualification, experience, consultationFee, availableDays, availableTimeStart, availableTimeEnd } = req.body;
+    const { name, email, phone, specialization, qualification, experience, consultationFee, availableDays, availableTimeStart, availableTimeEnd, availableSlots } = req.body;
     
     if (!name || !phone || !specialization || !qualification || experience === undefined || !consultationFee) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
@@ -78,7 +152,7 @@ router.post('/', auth, admin, async (req, res) => {
     }
     
     const doctor = new Doctor({
-      name, email, phone, specialization, qualification, experience, consultationFee, availableDays, availableTimeStart, availableTimeEnd, createdBy: req.user.id
+      name, email, phone, specialization, qualification, experience, consultationFee, availableDays, availableTimeStart, availableTimeEnd, availableSlots: availableSlots || 10, createdBy: req.user.id
     });
     
     await doctor.save();
@@ -95,7 +169,7 @@ router.post('/', auth, admin, async (req, res) => {
 
 router.put('/:id', auth, admin, async (req, res) => {
   try {
-    const { name, email, phone, specialization, qualification, experience, consultationFee, availableDays, availableTimeStart, availableTimeEnd, isActive } = req.body;
+    const { name, email, phone, specialization, qualification, experience, consultationFee, availableDays, availableTimeStart, availableTimeEnd, availableSlots, isActive } = req.body;
     
     const doctor = await Doctor.findById(req.params.id);
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
@@ -121,6 +195,7 @@ router.put('/:id', auth, admin, async (req, res) => {
       availableDays: availableDays || doctor.availableDays,
       availableTimeStart: availableTimeStart || doctor.availableTimeStart,
       availableTimeEnd: availableTimeEnd || doctor.availableTimeEnd,
+      availableSlots: availableSlots !== undefined ? availableSlots : doctor.availableSlots,
       isActive: isActive !== undefined ? isActive : doctor.isActive
     }, { new: true, runValidators: true });
     

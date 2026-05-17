@@ -157,6 +157,12 @@ export const doctorService = {
   // Get doctor statistics
   getStats: () => api.get('/doctors/stats'),
   
+  // Get doctor report (all doctors with available slots)
+  getReport: () => api.get('/doctors/report/all'),
+  
+  // Search doctor by ID
+  searchById: (doctorId) => api.get(`/doctors/search/by-id/${doctorId}`),
+  
   // Create new doctor (admin only)
   create: (data) => api.post('/doctors', data),
   

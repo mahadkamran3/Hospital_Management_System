@@ -28,6 +28,8 @@ import {
   Menu as MenuIcon,
   Person as PersonIcon,
   Close as CloseIcon,
+  Search as SearchIcon,
+  Summarize as ReportIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
@@ -134,6 +136,44 @@ const Navbar = () => {
             <CalendarIcon />
           </ListItemIcon>
           <ListItemText primary="Appointments" />
+        </ListItem>
+
+        <ListItem
+          button
+          onClick={() => handleNavigate('/search-doctor')}
+          sx={{
+            borderRadius: 2,
+            mb: 1,
+            bgcolor: isActive('/search-doctor') ? 'primary.main' : 'transparent',
+            color: isActive('/search-doctor') ? 'white' : 'inherit',
+            '&:hover': {
+              bgcolor: isActive('/search-doctor') ? 'primary.dark' : 'action.hover',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ color: isActive('/search-doctor') ? 'white' : 'inherit' }}>
+            <SearchIcon />
+          </ListItemIcon>
+          <ListItemText primary="Search Doctor" />
+        </ListItem>
+
+        <ListItem
+          button
+          onClick={() => handleNavigate('/doctor-report')}
+          sx={{
+            borderRadius: 2,
+            mb: 1,
+            bgcolor: isActive('/doctor-report') ? 'primary.main' : 'transparent',
+            color: isActive('/doctor-report') ? 'white' : 'inherit',
+            '&:hover': {
+              bgcolor: isActive('/doctor-report') ? 'primary.dark' : 'action.hover',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ color: isActive('/doctor-report') ? 'white' : 'inherit' }}>
+            <ReportIcon />
+          </ListItemIcon>
+          <ListItemText primary="Doctor Report" />
         </ListItem>
 
         {isAdmin && (
@@ -255,6 +295,34 @@ const Navbar = () => {
               >
                 Appointments
               </Button>
+
+              <Button
+                color="inherit"
+                startIcon={<SearchIcon />}
+                onClick={() => navigate('/search-doctor')}
+                sx={{
+                  backgroundColor: isActive('/search-doctor') ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                Search
+              </Button>
+
+              <Button
+                color="inherit"
+                startIcon={<ReportIcon />}
+                onClick={() => navigate('/doctor-report')}
+                sx={{
+                  backgroundColor: isActive('/doctor-report') ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                Report
+              </Button>
               
               {isAdmin && (
                 <Button
@@ -338,6 +406,20 @@ const Navbar = () => {
                 <CalendarIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText>Appointments</ListItemText>
+            </MenuItem>
+
+            <MenuItem onClick={() => { handleMenuClose(); navigate('/search-doctor'); }}>
+              <ListItemIcon>
+                <SearchIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Search Doctor</ListItemText>
+            </MenuItem>
+
+            <MenuItem onClick={() => { handleMenuClose(); navigate('/doctor-report'); }}>
+              <ListItemIcon>
+                <ReportIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Doctor Report</ListItemText>
             </MenuItem>
             
             {isAdmin && (

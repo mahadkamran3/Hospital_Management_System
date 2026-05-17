@@ -56,6 +56,12 @@ const doctorSchema = new mongoose.Schema({
     type: String,
     default: '05:00 PM'
   },
+  availableSlots: {
+    type: Number,
+    required: [true, 'Available appointment slots are required'],
+    min: [1, 'At least 1 appointment slot is required'],
+    default: 10
+  },
   isActive: {
     type: Boolean,
     default: true

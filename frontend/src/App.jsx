@@ -12,6 +12,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Appointments from './pages/Appointments';
 import Admin from './pages/Admin';
+import DoctorReport from './pages/DoctorReport';
+import DoctorSearch from './pages/DoctorSearch';
 
 /**
  * Main App Component
@@ -47,6 +49,26 @@ function App() {
           element={
             <ProtectedRoute>
               <Appointments />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Doctor Search Route - Require Authentication */}
+        <Route
+          path="/search-doctor"
+          element={
+            <ProtectedRoute>
+              <DoctorSearch />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Doctor Report Route - Require Authentication */}
+        <Route
+          path="/doctor-report"
+          element={
+            <ProtectedRoute>
+              <DoctorReport />
             </ProtectedRoute>
           }
         />
